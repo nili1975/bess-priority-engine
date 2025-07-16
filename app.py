@@ -1,59 +1,54 @@
-
 import streamlit as st
-from datetime import datetime
-import joblib
 import pandas as pd
-import numpy as np
+import joblib
+from datetime import datetime
+import pytz
 
-# טוען את המודל
-model = joblib.load('bess_priority_model2.pkl')
+# טען את המודל המאומן
+model = joblib.load("bess_priority_model2.pkl")
+
+def interactive_decision(soc, BESS_Power, hour, month):
+    input_data = pd.DataFrame([{
+        'soc': soc,
+        'hour': hour,
+        'month': month,
+        'abs_POC_BESS_Power': BESS_Power
+    }])
+
+    prediction = model.predict(input_data)[0]
+    prediction_proba = model.predict_proba(input_data)[0][1] if hasattr(model, "predict_proba") else None
+
+    decision = "🔋 טעינה נדרשת ל־BESS" if prediction == 1 else "✅ אין צורך בטעינה"
+
+    st.write("📥 קלט שהוזן למודל:")
+    st.dataframe(input_data)
+
+    st.write("📤 פלט מהמודל:")
+    st.success(f"החלטה: {decision}")
+    if prediction_proba is not None:
+        st.info(f"סבירות לטעינה נדרשת: {prediction_proba:.2%}")
 
 # כותרת ראשית
-st.title("⚡ החלטת טעינה ל־BESS על בסיס SOC ו־BESS Power")
+st.title("⚡ מערכת קבלת החלטות לטעינה ל־BESS (לפי מודל חכם)")
 
-# קלט מהמשתמש
-soc = st.slider("SOC [%]", 0, 100, 50)
-bess_power = st.slider("הספק אפשרי להזנת BESS [kW]\n(הספק טעינת הסוללות [kW])", 0, 6000, 3000)
-
-# זיהוי זמן נוכחי
-now = datetime.now()
+# זיהוי השעה והחודש לפי זמן ישראל
+israel_tz = pytz.timezone('Asia/Jerusalem')
+now = datetime.now(israel_tz)
 hour = now.hour
+minute = now.minute
 month = now.month
 
-# הודעה לפי השעה
-if hour >= 16:
-    st.warning("⛔ עברו השעות המומלצות לטעינה – המערכת לא ממליצה על טעינה לאחר 16:30")
-elif hour < 9:
-    st.info("⌛ מוקדם מדי – ההמלצה תתעדכן לאחר 09:00 בבוקר")
+# הצגת שעה וחודש
+st.markdown(f"🕒 שעה נוכחית: **{hour:02d}:{minute:02d}**  &nbsp;&nbsp;&nbsp; 📅 חודש נוכחי: **{month}**")
 
-# קיבולת הסוללה
-bess_capacity_kwh = 34650
+# קלטים מהמשתמש
+soc = st.slider("SOC [%]", min_value=0, max_value=100, value=50)
+BESS_Power = st.slider("הספק טעינה ל־BESS [kW]", min_value=0, max_value=6000, value=3000)
 
-# חישובים
-energy_needed_kwh = bess_capacity_kwh * (1 - soc / 100)
-required_quarters = np.ceil((energy_needed_kwh / bess_power) * 4)
-quarters_left = max(0, (16 - hour) * 4)
-
-# קלט למודל
-input_dict = {
-    'SOC': soc,
-    'hour': hour,
-    'month': month,
-    'required_quarters': required_quarters,
-    'quarters_left': quarters_left,
-    'energy_needed_kwh': energy_needed_kwh,
-    'abs_POC_BESS_Power': bess_power
-}
-
-# יצירת DataFrame עם הפיצ'רים שהמודל דורש
-selected_features = list(model.feature_names_in_)
-input_df = pd.DataFrame([{key: input_dict[key] for key in selected_features}])
-
-# הפעלת המודל
-prediction = model.predict(input_df)[0]
-
-# תוצאה
-if prediction == 1:
-    st.success("✅ המלצה: לטעון את הסוללה כעת.")
+# תנאים על פי זמן
+if hour < 9:
+    st.warning("⌛ ההמלצה תינתן רק לאחר השעה 09:00")
+elif hour > 16 or (hour == 16 and minute > 30):
+    st.warning("📴 חלון ההמלצות הסתיים ליום זה (אחרי 16:30)")
 else:
-    st.info("ℹ️ אין המלצה לטעינה בשלב זה.")
+    interactive_decision(soc, BESS_Power, hour, month)
