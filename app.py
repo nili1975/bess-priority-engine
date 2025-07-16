@@ -38,17 +38,20 @@ hour = now.hour
 minute = now.minute
 month = now.month
 
-# הצגת שעה וחודש
+# הצגת שעה וחודש (למעלה)
 st.markdown(f"🕒 שעה נוכחית: **{hour:02d}:{minute:02d}**  &nbsp;&nbsp;&nbsp; 📅 חודש נוכחי: **{month}**")
 
-# קלטים מהמשתמש
-soc = st.slider("SOC [%]", min_value=0, max_value=100, value=50)
-BESS_Power = st.slider("הספק טעינה ל־BESS [kW]", min_value=0, max_value=6000, value=3000)
-
-# תנאים על פי זמן
+# תנאי זמן: חסימת המלצה מחוץ לשעות 09:00–16:30
 if hour < 9:
     st.warning("⌛ ההמלצה תינתן רק לאחר השעה 09:00")
 elif hour > 16 or (hour == 16 and minute > 30):
     st.warning("📴 חלון ההמלצות הסתיים ליום זה (אחרי 16:30)")
 else:
+    # קלטים מהמשתמש
+    soc = st.slider("SOC [%]", min_value=0, max_value=100, value=50)
+    BESS_Power = st.slider("הספק טעינה ל־BESS [kW]", min_value=0, max_value=6000, value=3000)
     interactive_decision(soc, BESS_Power, hour, month)
+
+# הצגת שעה וחודש (למטה)
+st.markdown("---")
+st.markdown(f"🕒 שעה מעודכנת כעת: **{hour:02d}:{minute:02d}**, חודש: **{month}** לפי שעון ישראל.")
