@@ -29,29 +29,37 @@ def interactive_decision(soc, BESS_Power, hour, month):
         st.info(f"סבירות לטעינה נדרשת: {prediction_proba:.2%}")
 
 # כותרת ראשית
-st.title("⚡ מערכת קבלת החלטות לטעינה ל־BESS (לפי מודל חכם)")
+st.title("⚡ מערכת קבלת החלטות לטעינה ל־BESS (מוד דינמי עם אפשרות הדגמה)")
 
 # זיהוי השעה והחודש לפי זמן ישראל
 israel_tz = pytz.timezone('Asia/Jerusalem')
 now = datetime.now(israel_tz)
-hour = now.hour
-minute = now.minute
-month = now.month
+default_hour = now.hour
+default_minute = now.minute
+default_month = now.month
 
-# הצגת שעה וחודש (למעלה)
-st.markdown(f"🕒 שעה נוכחית: **{hour:02d}:{minute:02d}**  &nbsp;&nbsp;&nbsp; 📅 חודש נוכחי: **{month}**")
+# אפשרות למצב הדגמה
+demo_mode = st.checkbox("הפעל מצב הדגמה (שנה ידנית את השעה והחודש)", value=False)
 
-# תנאי זמן: חסימת המלצה מחוץ לשעות 09:00–16:30
+# בחירת שעה וחודש (אוטומטי או ידני)
+if demo_mode:
+    hour = st.slider("בחר שעה (0–23)", min_value=0, max_value=23, value=default_hour)
+    month = st.slider("בחר חודש (1–12)", min_value=1, max_value=12, value=default_month)
+else:
+    hour = default_hour
+    month = default_month
+    st.markdown(f"🕒 שעה נוכחית לפי המחשב: **{hour:02d}:{default_minute:02d}** &nbsp;&nbsp;&nbsp; 📅 חודש נוכחי: **{month}**")
+
+# תנאי זמן
 if hour < 9:
     st.warning("⌛ ההמלצה תינתן רק לאחר השעה 09:00")
-elif hour > 16 or (hour == 16 and minute > 30):
+elif hour > 16 or (hour == 16 and default_minute > 30):
     st.warning("📴 חלון ההמלצות הסתיים ליום זה (אחרי 16:30)")
 else:
-    # קלטים מהמשתמש
     soc = st.slider("SOC [%]", min_value=0, max_value=100, value=50)
     BESS_Power = st.slider("הספק טעינה ל־BESS [kW]", min_value=0, max_value=6000, value=3000)
     interactive_decision(soc, BESS_Power, hour, month)
 
-# הצגת שעה וחודש (למטה)
+# הצגה גם בתחתית
 st.markdown("---")
-st.markdown(f"🕒 שעה מעודכנת כעת: **{hour:02d}:{minute:02d}**, חודש: **{month}** לפי שעון ישראל.")
+st.markdown(f"🕒 שעה: **{hour:02d}**, חודש: **{month}** {'(מצב הדגמה)' if demo_mode else '(זיהוי אוטומטי)'}")
