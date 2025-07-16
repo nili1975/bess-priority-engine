@@ -16,6 +16,41 @@ A bilingual (English + Hebrew) interactive Streamlit app for deciding whether to
 
 ---
 
+## 🔬 Project Background & Methodology
+
+This project started by extracting operational data from a SCADA system. The raw data included 16 features related to site performance, energy flows, battery SOC, and availability.
+
+Steps performed:
+
+1. **Data Cleaning & Preparation**
+   - Removed invalid rows and handled missing values
+   - Filtered time intervals to include only 09:00–16:30 (operational hours)
+   - Interpolated and corrected noisy measurements
+
+2. **Feature Engineering**
+   - Created derived features such as:
+     - `energy_needed_kwh`
+     - `required_quarters` to fully charge the BESS
+     - `quarters_left` until end of day
+     - Priority indicator: whether enough time remains
+
+3. **Feature Selection**
+   - Used a Random Forest model to rank feature importance
+   - Selected only the most influential features to avoid overfitting
+
+4. **Model Training**
+   - Trained a classification model to predict whether charging should occur
+   - Tuned hyperparameters and validated on a held-out test set
+   - Ensured model generalization and avoided overfitting
+
+5. **Deployment**
+   - Built a Streamlit app to serve real-time decisions
+   - App includes manual override for demo/testing, feature validation, and fallback messaging outside operating hours
+
+The result: a lightweight, reliable decision support tool based on real operational data.
+
+---
+
 ## 🚀 Getting Started
 
 ### 1. Install dependencies
