@@ -9,10 +9,10 @@ model = joblib.load("bess_priority_model2.pkl")
 
 def interactive_decision(soc, BESS_Power, hour, month):
     input_data = pd.DataFrame([{
-        'soc': soc,
+        'SOC': soc,
+        'abs_POC_BESS_Power': BESS_Power,
         'hour': hour,
-        'month': month,
-        'abs_POC_BESS_Power': BESS_Power
+        'month': month
     }])
 
     prediction = model.predict(input_data)[0]
