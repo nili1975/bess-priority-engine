@@ -80,10 +80,10 @@ Make sure the file `bess_priority_model2.pkl` (trained model) is in the same fol
 
 | File | Description |
 |------|-------------|
-| `bess_decision_app_clean.py` | Streamlit app |
+| `app.py` | Streamlit app |
 | `bess_priority_model2.pkl` | Trained model (add manually) |
 | `requirements.txt` | Python dependencies |
-| `README.md` | This file |
+| `README1.md` | This file |
 
 ---
 
