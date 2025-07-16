@@ -51,6 +51,34 @@ The result: a lightweight, reliable decision support tool based on real operatio
 
 ---
 
+
+---
+
+## 🤖 Model Selection and Justification
+
+The main model used throughout the project was a **Random Forest Classifier**, due to its robustness, interpretability, and strong performance on tabular operational data.
+
+### Why Random Forest?
+
+- Handles nonlinear relationships well without requiring feature scaling
+- Naturally resistant to overfitting due to averaging over many trees
+- Supports feature importance ranking, which was critical for:
+  - **Feature selection** – identifying which SCADA-derived parameters had the most influence on the charging decision
+  - **Interpretability** – understanding which conditions most impact system recommendations
+
+### Workflow:
+
+1. **Initial Feature Selection**  
+   A full set of 16 features was extracted from SCADA data.  
+   Using a Random Forest model, feature importance was computed to identify the top contributors.
+
+2. **Model Training**  
+   A new Random Forest Classifier was trained on the selected subset of features.  
+   Hyperparameters were tuned to balance accuracy and generalization, and the model was validated to ensure no overfitting.
+
+The final model was then deployed inside the Streamlit decision support tool.
+
+
 ## 🚀 Getting Started
 
 ### 1. Install dependencies
@@ -80,10 +108,10 @@ Make sure the file `bess_priority_model2.pkl` (trained model) is in the same fol
 
 | File | Description |
 |------|-------------|
-| `app.py` | Streamlit app |
+| `bess_decision_app_clean.py` | Streamlit app |
 | `bess_priority_model2.pkl` | Trained model (add manually) |
 | `requirements.txt` | Python dependencies |
-| `README1.md` | This file |
+| `README.md` | This file |
 
 ---
 
